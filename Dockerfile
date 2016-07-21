@@ -19,14 +19,14 @@ RUN sudo apt-get install wget \
     && wget https://bootstrap.pypa.io/get-pip.py \
     && sudo python3.5 get-pip.py
 
-#Add musicBot
-ADD . /musicBot
+RUN mkdir -p /musicBot
+COPY requirements.txt /musicBot/requirements.txt
 WORKDIR /musicBot
 
 #Install PIP dependencies
 RUN sudo pip install -r requirements.txt
 
-#Add volume for configuration
-VOLUME /musicBot/config
+#Add musicBot
+ADD . /musicBot
 
 CMD python3.5 run.py
