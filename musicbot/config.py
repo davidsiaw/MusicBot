@@ -64,6 +64,7 @@ class Config:
 
         self.owner_id = config.get('Permissions', 'OwnerID', fallback=ConfigDefaults.owner_id)
         self.command_prefix = config.get('Chat', 'CommandPrefix', fallback=ConfigDefaults.command_prefix)
+        self.bot_nickname = config.get('Chat', 'BotNickname', fallback=ConfigDefaults.bot_nickname)
         self.bound_channels = config.get('Chat', 'BindToChannels', fallback=ConfigDefaults.bound_channels)
         self.autojoin_channels =  config.get('Chat', 'AutojoinChannels', fallback=ConfigDefaults.autojoin_channels)
 
@@ -173,6 +174,7 @@ class ConfigDefaults:
 
     owner_id = None
     command_prefix = '!'
+    bot_nickname = command_prefix
     bound_channels = set()
     autojoin_channels = set()
 

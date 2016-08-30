@@ -744,17 +744,16 @@ class MusicBot(discord.Client):
                 return Response("No such command", delete_after=10)
 
         else:
-            helpmsg = "**Commands**\n```"
+            helpmsg = "these are the commands: (to use, go @" + self.config.bot_nickname + " <command>)\n```"
             commands = []
 
             for att in dir(self):
                 if att.startswith('cmd_') and att != 'cmd_help':
                     command_name = att.replace('cmd_', '').lower()
-                    commands.append("{}{}".format(self.config.command_prefix, command_name))
+                    commands.append("{}".format(command_name))
 
             helpmsg += ", ".join(commands)
             helpmsg += "```"
-            helpmsg += "https://github.com/SexualRhinoceros/MusicBot/wiki/Commands-list"
 
             return Response(helpmsg, reply=True, delete_after=60)
 
@@ -1816,6 +1815,9 @@ class MusicBot(discord.Client):
         await self.wait_until_ready()
 
         message_content = message.content.strip()
+
+        self.safe_print("[Message] {0.id}/{0.name} ({1})".format(message.author, message_content))
+
         if not message_content.startswith(self.config.command_prefix):
             return
 
@@ -1826,8 +1828,12 @@ class MusicBot(discord.Client):
         if self.config.bound_channels and message.channel.id not in self.config.bound_channels and not message.channel.is_private:
             return  # if I want to log this I just move it under the prefix check
 
+        # for commands with prefixes that have spaces
+        message_content = message_content.replace(self.config.command_prefix, "", 1).strip()
+
         command, *args = message_content.split()  # Uh, doesn't this break prefixes with spaces in them (it doesn't, config parser already breaks them)
-        command = command[len(self.config.command_prefix):].lower().strip()
+
+        command = command.lower().strip()
 
         handler = getattr(self, 'cmd_%s' % command, None)
         if not handler:
