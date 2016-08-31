@@ -64,7 +64,6 @@ class Config:
 
         self.owner_id = config.get('Permissions', 'OwnerID', fallback=ConfigDefaults.owner_id)
         self.command_prefix = config.get('Chat', 'CommandPrefix', fallback=ConfigDefaults.command_prefix)
-        self.bot_nickname = config.get('Chat', 'BotNickname', fallback=ConfigDefaults.bot_nickname)
         self.bound_channels = config.get('Chat', 'BindToChannels', fallback=ConfigDefaults.bound_channels)
         self.autojoin_channels =  config.get('Chat', 'AutojoinChannels', fallback=ConfigDefaults.autojoin_channels)
 
@@ -85,6 +84,17 @@ class Config:
 
         self.run_checks()
 
+    def raw_command_prefix(self, bot):
+        if self.command_prefix == None:
+            return "<@{}> ".format(bot.user.id)
+        else:
+            return self.command_prefix
+
+    def user_displayed_command_prefix(self, bot):
+        if self.command_prefix == None:
+            return "@{} ".format(bot.user.name)
+        else:
+            return self.command_prefix
 
     def run_checks(self):
         """
@@ -173,8 +183,7 @@ class ConfigDefaults:
     token = None    #
 
     owner_id = None
-    command_prefix = '!'
-    bot_nickname = command_prefix
+    command_prefix = None
     bound_channels = set()
     autojoin_channels = set()
 

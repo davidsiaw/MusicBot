@@ -357,7 +357,7 @@ class MusicBot(discord.Client):
             if not create:
                 raise exceptions.CommandError(
                     'The bot is not in a voice channel.  '
-                    'Use %ssummon to summon it to your voice channel.' % self.config.command_prefix)
+                    'Use %ssummon to summon it to your voice channel.' % self.config.user_displayed_command_prefix(self))
 
             voice_client = await self.get_voice_client(channel)
 
@@ -676,7 +676,8 @@ class MusicBot(discord.Client):
         print()
         print("Options:")
 
-        self.safe_print("  Command prefix: " + self.config.command_prefix)
+        self.safe_print("  User Displayed Command prefix: " + self.config.user_displayed_command_prefix(self))
+        self.safe_print("  Raw Command prefix: " + self.config.raw_command_prefix(self))
         print("  Default volume: %s%%" % int(self.config.default_volume * 100))
         print("  Skip threshold: %s votes or %s%%" % (
             self.config.skips_required, self._fixg(self.config.skip_ratio_required * 100)))
@@ -736,7 +737,7 @@ class MusicBot(discord.Client):
                 return Response(
                     "```\n{}```".format(
                         dedent(cmd.__doc__),
-                        command_prefix=self.config.command_prefix
+                        command_prefix=self.config.user_displayed_command_prefix(self)
                     ),
                     delete_after=60
                 )
@@ -744,7 +745,7 @@ class MusicBot(discord.Client):
                 return Response("No such command", delete_after=10)
 
         else:
-            helpmsg = "these are the commands: (to use, go @" + self.config.bot_nickname + " <command>)\n```"
+            helpmsg = "these are the commands: (to use, go " + self.config.user_displayed_command_prefix(self) + "<command>)\n```"
             commands = []
 
             for att in dir(self):
@@ -1154,7 +1155,7 @@ class MusicBot(discord.Client):
             if not leftover_args:
                 raise exceptions.CommandError(
                     "Please specify a search query.\n%s" % dedent(
-                        self.cmd_search.__doc__.format(command_prefix=self.config.command_prefix)),
+                        self.cmd_search.__doc__.format(command_prefix=self.config.user_displayed_command_prefix(self))),
                     expire_in=60
                 )
 
@@ -1219,7 +1220,7 @@ class MusicBot(discord.Client):
             return (
                 m.content.lower()[0] in 'yn' or
                 # hardcoded function name weeee
-                m.content.lower().startswith('{}{}'.format(self.config.command_prefix, 'search')) or
+                m.content.lower().startswith('{}{}'.format(self.config.raw_command_prefix(self), 'search')) or
                 m.content.lower().startswith('exit'))
 
         for e in info['entries']:
@@ -1235,7 +1236,7 @@ class MusicBot(discord.Client):
                 return Response("Ok nevermind.", delete_after=30)
 
             # They started a new search query so lets clean up and bugger off
-            elif response_message.content.startswith(self.config.command_prefix) or \
+            elif response_message.content.startswith(self.config.raw_command_prefix(self)) or \
                     response_message.content.lower().startswith('exit'):
 
                 await self.safe_delete_message(result_message)
@@ -1284,7 +1285,7 @@ class MusicBot(discord.Client):
             await self._manual_delete_check(message)
         else:
             return Response(
-                'There are no songs queued! Queue something with {}play.'.format(self.config.command_prefix),
+                'There are no songs queued! Queue something with {}play.'.format(self.config.user_displayed_command_prefix(self)),
                 delete_after=30
             )
 
@@ -1545,7 +1546,7 @@ class MusicBot(discord.Client):
 
         if not lines:
             lines.append(
-                'There are no songs queued! Queue something with {}play.'.format(self.config.command_prefix))
+                'There are no songs queued! Queue something with {}play.'.format(self.config.user_displayed_command_prefix(self)))
 
         message = '\n'.join(lines)
         return Response(message, delete_after=30)
@@ -1568,7 +1569,7 @@ class MusicBot(discord.Client):
 
         def is_possible_command_invoke(entry):
             valid_call = any(
-                entry.content.startswith(prefix) for prefix in [self.config.command_prefix])  # can be expanded
+                entry.content.startswith(prefix) for prefix in [self.config.raw_command_prefix(self)])  # can be expanded
             return valid_call and not entry.content[1:2].isspace()
 
         delete_invokes = True
@@ -1818,7 +1819,7 @@ class MusicBot(discord.Client):
 
         self.safe_print("[Message] {0.id}/{0.name} ({1})".format(message.author, message_content))
 
-        if not message_content.startswith(self.config.command_prefix):
+        if not message_content.startswith(self.config.raw_command_prefix(self)):
             return
 
         if message.author == self.user:
@@ -1829,7 +1830,7 @@ class MusicBot(discord.Client):
             return  # if I want to log this I just move it under the prefix check
 
         # for commands with prefixes that have spaces
-        message_content = message_content.replace(self.config.command_prefix, "", 1).strip()
+        message_content = message_content.replace(self.config.raw_command_prefix(self), "", 1).strip()
 
         command, *args = message_content.split()  # Uh, doesn't this break prefixes with spaces in them (it doesn't, config parser already breaks them)
 
@@ -1921,7 +1922,7 @@ class MusicBot(discord.Client):
                 docs = getattr(handler, '__doc__', None)
                 if not docs:
                     docs = 'Usage: {}{} {}'.format(
-                        self.config.command_prefix,
+                        self.config.user_displayed_command_prefix(self),
                         command,
                         ' '.join(args_expected)
                     )
@@ -1929,7 +1930,7 @@ class MusicBot(discord.Client):
                 docs = '\n'.join(l.strip() for l in docs.split('\n'))
                 await self.safe_send_message(
                     message.channel,
-                    '```\n%s\n```' % docs.format(command_prefix=self.config.command_prefix),
+                    '```\n%s\n```' % docs.format(command_prefix=self.config.user_displayed_command_prefix(self)),
                     expire_in=60
                 )
                 return
