@@ -450,18 +450,14 @@ class MusicBot(discord.Client):
 
         if self.user.bot:
             activeplayers = sum(1 for p in self.players.values() if p.is_playing)
-            if activeplayers > 1:
-                game = discord.Game(name="music on %s servers" % activeplayers)
-                entry = None
-
-            elif activeplayers == 1:
+            if activeplayers >= 1:
                 player = discord.utils.get(self.players.values(), is_playing=True)
                 entry = player.current_entry
 
         if entry:
             prefix = u'\u275A\u275A ' if is_paused else ''
 
-            name = u'{}{}'.format(prefix, entry.title)[:128]
+            name = u'{}{} on {} server{}'.format(prefix, entry.title, activeplayers, "" if activeplayers == 1 else "s")[:128]
             game = discord.Game(name=name)
 
         await self.change_status(game)
