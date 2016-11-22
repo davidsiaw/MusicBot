@@ -1,0 +1,53 @@
+
+price = hidden_value "0.02"
+
+lambda = make_lambda(files:[
+{
+	name:"index.js",
+	path:"slack.js"
+}])
+
+asg_topic = make "AWS::SNS::Topic" do
+	Subscription [
+		{
+			Endpoint: lambda.Arn,
+			Protocol: "lambda"
+		}
+	]
+end
+
+make "AWS::Lambda::Permission" do
+	FunctionName lambda.Arn
+	Action "lambda:InvokeFunction"
+	Principal "sns.amazonaws.com"
+	SourceArn asg_topic
+end
+
+network = make_network(layers: ["bot"])
+eip = make "AWS::EC2::EIP"
+
+hibiki = {
+	name: "hibiki",
+	image: "davidsiaw/musicbot",
+	files: {
+		"options.ini" => "/musicBot/config/options.ini",
+		"permissions.ini" => "/musicBot/config/permissions.ini",
+		"autoplaylist.txt" => "/musicBot/config/autoplaylist.ini"
+	}
+}
+
+make_ecs_cluster(
+
+	services: [ 
+		{ containers: [hibiki] }
+	],
+
+	machine_config: {
+		price: price, 
+		network: network, 
+		layer: "bot", 
+		eip: eip,
+		ec2_sns_arn: asg_topic,
+		methods: [:make_spotter]
+	}
+)
